@@ -27,7 +27,7 @@
 # GNOME modules
 #
 #-------------------------------------------------------------------------
-from gi.repository import Gtk
+from gi.repository import GObject, Gtk
 
 ## display image metadata using GExiv2 library instead of Exiftool
 # *****************************************************************************
@@ -81,6 +81,8 @@ class DisplayExiv2(Gramplet):
     """
     
     def init(self):
+        self.defer_draw = False
+        self.defer_draw_id = None
         self.set_text( "Exiv2 Metadata" )
         gexiv2Version = GExiv2.get_version()
         self.gui.WIDGET = self.build_gui()
@@ -101,6 +103,16 @@ class DisplayExiv2(Gramplet):
         return self.view
     # ----------------------------------------------------------
     def main(self):
+        if not self.defer_draw_id:
+            self.defer_draw_id = GObject.timeout_add(250, self.handle_draw)
+        else:
+            self.defer_draw = True
+
+    def handle_draw(self):
+        if self.defer_draw:
+            self.defer_draw = False
+            return True
+        self.defer_draw = False
         active_handle = self.get_active('Media')
         if active_handle:
             media = self.dbstate.db.get_media_from_handle(active_handle)
@@ -112,6 +124,9 @@ class DisplayExiv2(Gramplet):
                 self.set_has_data(False)
         else:
             self.set_has_data(False)
+        GObject.source_remove(self.defer_draw_id)
+        self.defer_draw_id = None
+        return False
 
 # ----------------------------------------------------------
 
