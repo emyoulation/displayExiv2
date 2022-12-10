@@ -112,7 +112,6 @@ class DisplayExiv2(Gramplet):
         if self.defer_draw:
             self.defer_draw = False
             return True
-        self.defer_draw = False
         active_handle = self.get_active('Media')
         if active_handle:
             media = self.dbstate.db.get_media_from_handle(active_handle)
